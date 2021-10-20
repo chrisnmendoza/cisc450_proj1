@@ -104,38 +104,42 @@ int main(void) {
       bytes_recd = recvfrom(sock_server, reqBuffer, 4, 0,
                      (struct sockaddr *) &client_addr, &client_addr_len);
       printf("count is: %d\n     with id %d\n\n",
-                         (int)reqBuffer->count, (int)reqBuffer->id);
+                         ntohs(reqBuffer->count), ntohs(reqBuffer->id));
       /* prepare the message to send */
 
-      response->id = reqBuffer->id;
-      response->seqNum = (unsigned short int)1;
-      unsigned short int packetsLeftToSend = reqBuffer->count; 
+      response->id = ntohs(reqBuffer->id);
+      response->id = htons(response->id);
+      response->seqNum = htons((unsigned short int)1);
+      unsigned short int packetsLeftToSend = htons(reqBuffer->count); 
       bytes_sent = 0;
       int packets_sent = 0;
       unsigned long int seqSum = 0;
       while(packetsLeftToSend > 0) {
          printf("packets left to send: %d\n",packetsLeftToSend);
          if(packetsLeftToSend <= 25) {
-            response->count = packetsLeftToSend;
-            response->last = 1;
+            response->count = htons(packetsLeftToSend);
+            response->last = htons(1);
             packetsLeftToSend = 0;
          }
          else {
             packetsLeftToSend -= 25;
-            response->count = 25;
-            response->last = 0;
+            response->count = htons(25);
+            response->last = htons(0);
          }
          unsigned int data[25];
-         for(int i = 0; i < response->count; i++) {
-            data[i] = (unsigned int)(rand() % 4294967296);
+         printf("here\n");
+         for(int i = 0; i < ntohs(response->count); i++) {
+            data[i] = htons((unsigned int)(rand() % 4294967296));
          }
          memcpy(response->payload,data,response->count);
          bytes_sent += sendto(sock_server, response, 108, 0,
                (struct sockaddr*) &client_addr, client_addr_len);
          packets_sent++;
-         seqSum += response->seqNum;
+         seqSum = seqSum + ntohs(response->seqNum);
          printf("bytes sent: %d\n",bytes_sent);
-         response->seqNum += 1;
+         int tempSeqNum = ntohs(response->seqNum);
+         tempSeqNum++;
+         response->seqNum = htons(tempSeqNum);
       }
 
 
