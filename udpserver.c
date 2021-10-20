@@ -107,35 +107,35 @@ int main(void) {
                          (int)reqBuffer->count, (int)reqBuffer->id);
       /* prepare the message to send */
 
-      response->id = ntohs(reqBuffer->id);
-      response->seqNum = htons((unsigned short int)1);
-      unsigned short int packetsLeftToSend = ntohs(reqBuffer->count); 
+      response->id = reqBuffer->id;
+      response->seqNum = (unsigned short int)1;
+      unsigned short int packetsLeftToSend = reqBuffer->count; 
       bytes_sent = 0;
       int packets_sent = 0;
       unsigned long int seqSum = 0;
       while(packetsLeftToSend > 0) {
          printf("packets left to send: %d\n",packetsLeftToSend);
          if(packetsLeftToSend <= 25) {
-            response->count = htons(packetsLeftToSend);
-            response->last = htons(1);
+            response->count = packetsLeftToSend;
+            response->last = 1;
             packetsLeftToSend = 0;
          }
          else {
             packetsLeftToSend -= 25;
-            response->count = htons(25);
-            response->last = htons(0);
+            response->count = 25;
+            response->last = 0;
          }
          unsigned int data[25];
          for(int i = 0; i < response->count; i++) {
-            data[i] = htons((unsigned int)(rand() % 4294967296));
+            data[i] = (unsigned int)(rand() % 4294967296);
          }
          memcpy(response->payload,data,response->count);
          bytes_sent += sendto(sock_server, response, 108, 0,
                (struct sockaddr*) &client_addr, client_addr_len);
          packets_sent++;
-         seqSum += ntohs(response->seqNum);
+         seqSum += response->seqNum;
          printf("bytes sent: %d\n",bytes_sent);
-         response->seqNum += ntohs(1);
+         response->seqNum += 1;
       }
 
 

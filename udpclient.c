@@ -115,7 +115,7 @@ int main(void) {
 
    struct ReqPacket* pkt = malloc(sizeof(struct ReqPacket));
    struct ResponsePacket* responseBuffer = malloc(sizeof(struct ResponsePacket));
-   pkt->id = htons(0);
+   pkt->id = 0;
    while(1 == 1) {
       /* user interface */
 
@@ -126,8 +126,8 @@ int main(void) {
          printf("invalid number");
          exit(1);
       }
-      pkt->id = htons(pkt->id + 1);
-      pkt->count = htons((unsigned short)num);
+      pkt->id += 1;
+      pkt->count = (unsigned short)num;
 
       /* send message */
    
@@ -146,15 +146,15 @@ int main(void) {
          bytes_recd = recvfrom(sock_client, responseBuffer, 108, 0,
                   (struct sockaddr *) 0, (int *) 0);
          printf("\nThe response from server is:\n");
-         printf("%d\n\n", ntohl((unsigned int)responseBuffer->payload[0]));
-         if(ntohs(responseBuffer->id) != ntohs(pkt->id)) {
+         printf("%d\n\n", (unsigned int)responseBuffer->payload[0]);
+         if(responseBuffer->id != pkt->id) {
             printf("something went wrong, wrong response number\n");
             exit(1);
          }
          bytesReceived += bytes_recd;
          packetsReceived++;
-         seqSum += ntohs(responseBuffer->seqNum);
-         shouldStop = ntohs(responseBuffer->last);
+         seqSum += responseBuffer->seqNum;
+         shouldStop = responseBuffer->last;
       }
       printf("Request ID: %d\t",pkt->id);
       printf("Count: %d\n",pkt->count);
