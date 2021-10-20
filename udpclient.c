@@ -148,7 +148,7 @@ int main(void) {
          bytes_recd = recvfrom(sock_client, responseBuffer, 108, 0,
                   (struct sockaddr *) 0, (int *) 0);
          printf("\nThe response from server is:\n");
-         printf("%d\n\n", ntohl(responseBuffer->payload[0]));
+         printf("%d\n\n", ntohl((unsigned int)responseBuffer->payload[0]));
          if(ntohs(responseBuffer->id) != ntohs(pkt->id)) {
             printf("something went wrong, wrong response number\n");
             exit(1);

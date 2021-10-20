@@ -129,9 +129,10 @@ int main(void) {
          unsigned int data[25];
          printf("here\n");
          for(int i = 0; i < ntohs(response->count); i++) {
-            data[i] = htons((unsigned int)(rand() % 4294967296));
+            data[i] = htonl((unsigned int)(rand() % 4294967296));
          }
-         memcpy(response->payload,data,response->count);
+         printf("data[0]: %d\n",ntohl(data[0]));
+         memcpy(response->payload,data,ntohs(response->count));
          bytes_sent += sendto(sock_server, response, 108, 0,
                (struct sockaddr*) &client_addr, client_addr_len);
          packets_sent++;
