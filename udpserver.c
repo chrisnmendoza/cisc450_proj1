@@ -19,6 +19,7 @@
 
 #define SERV_UDP_PORT 65151
 #define RAND_MAX 4294967295
+				
 
 int main(void) {
 
@@ -103,8 +104,6 @@ int main(void) {
 
       bytes_recd = recvfrom(sock_server, reqBuffer, 4, 0,
                      (struct sockaddr *) &client_addr, &client_addr_len);
-      printf("count is: %d\n     with id %d\n\n",
-                         ntohs(reqBuffer->count), ntohs(reqBuffer->id));
       /* prepare the message to send */
 
       response->id = ntohs(reqBuffer->id);
@@ -114,8 +113,8 @@ int main(void) {
       bytes_sent = 0;
       int packets_sent = 0;
       unsigned long int seqSum = 0;
+      unsigned int intsum = 0;
       while(packetsLeftToSend > 0) {
-         printf("packets left to send: %d\n",packetsLeftToSend);
          if(packetsLeftToSend <= 25) {
             response->count = htons(packetsLeftToSend);
             response->last = htons(1);
@@ -127,21 +126,27 @@ int main(void) {
             response->last = htons(0);
          }
          unsigned int data[25];
-         printf("here\n");
          for(int i = 0; i < ntohs(response->count); i++) {
             data[i] = htonl((unsigned int)(rand() % 4294967296));
+	    unsigned int tempsum =ntohl(data[i]);
+	    intsum = intsum + tempsum;
+
          }
-         printf("data[0]: %d\n",ntohl(data[0]));
-         memcpy(response->payload,data,ntohs(response->count));
+         memcpy(response->payload,data,4*(ntohs(response->count)));
          bytes_sent += sendto(sock_server, response, 108, 0,
                (struct sockaddr*) &client_addr, client_addr_len);
          packets_sent++;
          seqSum = seqSum + ntohs(response->seqNum);
-         printf("bytes sent: %d\n",bytes_sent);
          int tempSeqNum = ntohs(response->seqNum);
          tempSeqNum++;
          response->seqNum = htons(tempSeqNum);
       }
+      printf("Request ID: %d\t", ntohs(response->id));
+      printf("Count: %d\n", ntohs(reqBuffer->count));
+      printf("Checksum: %u\n", (unsigned)intsum);
+      printf("Total number of packets sent: %d\n", packets_sent);
+      printf("total number of bytes sent %d\n",bytes_sent);
+      printf("Sequence number sum %lu\n",seqSum);
 
 
       /*

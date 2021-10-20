@@ -12,6 +12,29 @@
 #include <string.h>
 
 #define STRING_SIZE 1024
+unsigned short csum(unsigned short *ptr, int nbytes){
+	register long sum;
+	unsigned short oddbyte;
+	register short answer;
+
+	sum=0;
+	while(nbytes>1){
+		sum+=*ptr++;
+		nbytes-=2;
+	}
+	if(nbytes==1){
+		oddbyte=0;
+		*((u_char*)&oddbyte)=*(u_char*)ptr;
+		sum+=oddbyte;
+	}
+	sum = (sum>>16)+(sum & 0xffff);
+	sum = sum + (sum>>16);
+	answer=(short)~sum;
+
+	return(answer);
+
+
+}
 
 int main(void) {
 
@@ -126,11 +149,11 @@ int main(void) {
          printf("invalid number");
          exit(1);
       }
+
       int tempId = ntohs(pkt->id);
       tempId++;
       pkt->id = htons(tempId);
       pkt->count = htons((unsigned short)num);
-
       /* send message */
    
       bytes_sent = sendto(sock_client, pkt, 4, 0,
@@ -144,11 +167,11 @@ int main(void) {
       long int seqSum = 0;
       int checksum = 0;
       int shouldStop = 0;
+      unsigned int intsum = 0;
+      int index = 0;
       while(shouldStop == 0) {
          bytes_recd = recvfrom(sock_client, responseBuffer, 108, 0,
                   (struct sockaddr *) 0, (int *) 0);
-         printf("\nThe response from server is:\n");
-         printf("%d\n\n", ntohl((unsigned int)responseBuffer->payload[0]));
          if(ntohs(responseBuffer->id) != ntohs(pkt->id)) {
             printf("something went wrong, wrong response number\n");
             exit(1);
@@ -158,13 +181,28 @@ int main(void) {
          int tempSum = ntohs(responseBuffer->seqNum);
          seqSum += tempSum;
          shouldStop = ntohs(responseBuffer->last);
+	 //__int32_t tempintsum = ntohl(responseBuffer->payload[index]);
+	 //intsum= ntohl(intsum+tempintsum);
+	 unsigned int tempintsum = 0;
+	 for(int i =0; i< ntohs(responseBuffer->count);i++){
+		// printf("payload: %d\n", ntohl(responseBuffer->payload[i]));
+		 tempintsum = tempintsum + ntohl(responseBuffer->payload[i]);
+		// printf("tempintsum of data %d\n", tempintsum);
+	 }
+	 intsum = intsum + tempintsum;
+	// printf("packets left to send: %d\n", ntohs(responseBuffer->count));
+	// printf("the data from packet : %d\n",responseBuffer->payload[index]);
+	// printf("this is the intsum after _32int_t %d\n", tempintsum);
+	// printf("this is the intum of the totalintsum %d\n", intsum);
+	 index++;
       }
+      //csum(*intsum, bytesReceived);
       printf("Request ID: %d\t",ntohs(pkt->id));
       printf("Count: %d\n",ntohs(pkt->count));
       printf("total number of response packets received: %d\n",packetsReceived);
       printf("total number of bytes received: %d\n",bytesReceived);
       printf("Sequence Number sum: %lu\n",seqSum);
-      printf("checksum: %d\n",checksum);
+      printf("checksum: %u\n",intsum);
       printf("Type \"continue\" to continue, type anything else to exit\n");
       char userInput[STRING_SIZE];
       scanf("%s",userInput);
