@@ -1,0 +1,88 @@
+Script started on 2021-10-21 01:59:37-0400
+mendozac@cisc450:~/cisc450/proj1$ ls -l
+total 49
+-rwxrwxr-x 1 mendozac mendozac   343 Oct 17 16:21 Makefile
+-rwxrwxr-x 1 mendozac mendozac    14 Oct 19 20:48 README.md
+-rwxrwxr-x 1 mendozac mendozac 13072 Oct 21 02:00 tcpclient
+-rwxrwxr-x 1 mendozac mendozac  3206 Oct 17 16:21 tcpclient.c
+-rwxrwxr-x 1 mendozac mendozac 13008 Oct 21 02:00 tcpserver
+-rwxrwxr-x 1 mendozac mendozac  4099 Oct 18 15:35 tcpserver.c
+-rwxrwxr-x 1 mendozac mendozac 13440 Oct 21 02:00 udpclient
+-rwxrwxr-x 1 mendozac mendozac  7753 Oct 21 01:36 udpclient.c
+-rw-rw-r-- 1 mendozac mendozac     0 Oct 21 01:59 udpclient.scr
+-rwxrwxr-x 1 mendozac mendozac 13160 Oct 21 02:00 udpserver
+-rwxrwxr-x 1 mendozac mendozac  5708 Oct 21 01:49 udpserver.c
+-rw-rw-r-- 1 mendozac mendozac     0 Oct 21 02:00 udpserver.scr
+mendozac@cisc450:~/cisc450/proj1$ ./udpclient
+Enter hostname of server: cisc450.cis.udel.edu
+Enter port number for server: 65151
+Please input count of integers:
+1
+Waiting for response from server...
+
+Request ID: 1	Count: 1
+total number of response packets received: 1
+total number of bytes received: 108
+Sequence Number sum: 1
+checksum: 1026797281
+Type "continue" to continue, type anything else to exit
+continue
+continuing
+Please input count of integers:
+100
+Waiting for response from server...
+
+Request ID: 2	Count: 100
+total number of response packets received: 4
+total number of bytes received: 432
+Sequence Number sum: 10
+checksum: 4213498654
+Type "continue" to continue, type anything else to exit
+continue
+continuing
+Please input count of integers:
+-50
+invalid number
+Please input count of integers:
+500000000
+invalid number
+Please input count of integers:
+5000
+Waiting for response from server...
+
+Request ID: 3	Count: 5000
+total number of response packets received: 200
+total number of bytes received: 21600
+Sequence Number sum: 20100
+checksum: 1973019188
+Type "continue" to continue, type anything else to exit
+continue
+continuing
+Please input count of integers:
+5400
+Waiting for response from server...
+
+Request ID: 4	Count: 5400
+total number of response packets received: 216
+total number of bytes received: 23328
+Sequence Number sum: 23436
+checksum: 1568476600
+Type "continue" to continue, type anything else to exit
+continue
+continuing
+Please input count of integers:
+30
+Waiting for response from server...
+
+Request ID: 5	Count: 30
+total number of response packets received: 2
+total number of bytes received: 216
+Sequence Number sum: 3
+checksum: 908904644
+Type "continue" to continue, type anything else to exit
+exit please
+exiting
+mendozac@cisc450:~/cisc450/proj1$ exit
+exit
+
+Script done on 2021-10-21 02:01:27-0400

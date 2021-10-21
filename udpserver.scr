@@ -1,0 +1,70 @@
+Script started on 2021-10-21 02:00:19-0400
+mendozac@cisc450:~/cisc450/proj1$ ls -l
+total 51
+-rwxrwxr-x 1 mendozac mendozac   343 Oct 17 16:21 Makefile
+-rwxrwxr-x 1 mendozac mendozac    14 Oct 19 20:48 README.md
+-rwxrwxr-x 1 mendozac mendozac 13072 Oct 21 02:00 tcpclient
+-rwxrwxr-x 1 mendozac mendozac  3206 Oct 17 16:21 tcpclient.c
+-rwxrwxr-x 1 mendozac mendozac 13008 Oct 21 02:00 tcpserver
+-rwxrwxr-x 1 mendozac mendozac  4099 Oct 18 15:35 tcpserver.c
+-rwxrwxr-x 1 mendozac mendozac 13440 Oct 21 02:00 udpclient
+-rwxrwxr-x 1 mendozac mendozac  7753 Oct 21 01:36 udpclient.c
+-rw-rw-r-- 1 mendozac mendozac     0 Oct 21 01:59 udpclient.scr
+-rwxrwxr-x 1 mendozac mendozac 13160 Oct 21 02:00 udpserver
+-rwxrwxr-x 1 mendozac mendozac  5708 Oct 21 01:49 udpserver.c
+-rw-rw-r-- 1 mendozac mendozac     0 Oct 21 02:00 udpserver.scr
+mendozac@cisc450:~/cisc450/proj1$ make clean[K[K[K[Klean
+rm tcpclient tcpserver udpclient udpserver
+mendozac@cisc450:~/cisc450/proj1$ ls -l
+total 22
+-rwxrwxr-x 1 mendozac mendozac  343 Oct 17 16:21 Makefile
+-rwxrwxr-x 1 mendozac mendozac   14 Oct 19 20:48 README.md
+-rwxrwxr-x 1 mendozac mendozac 3206 Oct 17 16:21 tcpclient.c
+-rwxrwxr-x 1 mendozac mendozac 4099 Oct 18 15:35 tcpserver.c
+-rwxrwxr-x 1 mendozac mendozac 7753 Oct 21 01:36 udpclient.c
+-rw-rw-r-- 1 mendozac mendozac    0 Oct 21 01:59 udpclient.scr
+-rwxrwxr-x 1 mendozac mendozac 5708 Oct 21 01:49 udpserver.c
+-rw-rw-r-- 1 mendozac mendozac    0 Oct 21 02:00 udpserver.scr
+mendozac@cisc450:~/cisc450/proj1$ make all
+/usr/bin/gcc tcpclient.c -o tcpclient
+/usr/bin/gcc tcpserver.c -o tcpserver
+/usr/bin/gcc udpclient.c -o udpclient
+/usr/bin/gcc udpserver.c -o udpserver
+mendozac@cisc450:~/cisc450/proj1$ ./udpserver
+Waiting for incoming messages on port 65151
+
+Request ID: 1	Count: 1
+Total number of packets sent: 1
+total number of bytes sent 108
+Sequence number sum 1
+Checksum: 1026797281
+
+Request ID: 2	Count: 100
+Total number of packets sent: 4
+total number of bytes sent 432
+Sequence number sum 10
+Checksum: 4213498654
+
+Request ID: 3	Count: 5000
+Total number of packets sent: 200
+total number of bytes sent 21600
+Sequence number sum 20100
+Checksum: 1973019188
+
+Request ID: 4	Count: 5400
+Total number of packets sent: 216
+total number of bytes sent 23328
+Sequence number sum 23436
+Checksum: 1568476600
+
+Request ID: 5	Count: 30
+Total number of packets sent: 2
+total number of bytes sent 216
+Sequence number sum 3
+Checksum: 908904644
+
+^C
+mendozac@cisc450:~/cisc450/proj1$ exit
+exit
+
+Script done on 2021-10-21 02:01:30-0400

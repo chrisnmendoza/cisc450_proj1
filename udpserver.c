@@ -86,18 +86,10 @@ int main(void) {
       exit(1);
    }
 
+   struct ReqPacket reqBuffer;
+   struct ResponsePacket response;
+
    /* wait for incoming messages in an indefinite loop */
-   printf("size of unsigned short int: %d\n",(int)sizeof(unsigned short int));
-   printf("size of unsigned int: %d\n",(int)sizeof(unsigned int));
-   printf("size of unsigned long int: %d\n",(int)sizeof(unsigned long int));
-   printf("size of unsigned int array: %d\n",(int)sizeof(unsigned int[25]));
-   printf("size of responsePacket: %d\n",(int)sizeof(struct ResponsePacket));
-   printf("size of reqPacket: %d\n",(int)sizeof(struct ReqPacket));
-   printf("size of reqPacket pointer: %d\n",(int)sizeof(struct ReqPacket*));
-
-   struct ReqPacket* reqBuffer = malloc(sizeof(struct ReqPacket));
-   struct ResponsePacket* response = malloc(sizeof(struct ResponsePacket));
-
    printf("Waiting for incoming messages on port %hu\n\n", 
                            server_port);
 
@@ -106,46 +98,46 @@ int main(void) {
    for (;;) {
 
       /* receive request */
-      bytes_recd = recvfrom(sock_server, reqBuffer, 4, 0,
+      bytes_recd = recvfrom(sock_server, &reqBuffer, 4, 0,
                      (struct sockaddr *) &client_addr, &client_addr_len);
       
       /* prepare the message to send */
-      prepareResponse(reqBuffer, response);
-      unsigned short int packetsLeftToSend = htons(reqBuffer->count); 
+      prepareResponse(&reqBuffer, &response);
+      unsigned short int packetsLeftToSend = htons(reqBuffer.count); 
       bytes_sent = 0;
       int packets_sent = 0;
       unsigned long int seqSum = 0;
       unsigned int intsum = 0;
       while(packetsLeftToSend > 0) {
          if(packetsLeftToSend <= 25) { //this will be the last packet, must set last bit to 1 and correctly set number of data values
-            response->count = htons(packetsLeftToSend);
-            response->last = htons(1);
+            response.count = htons(packetsLeftToSend);
+            response.last = htons(1);
             packetsLeftToSend = 0;
          }
          else {
             packetsLeftToSend -= 25;
-            response->count = htons(25);
-            response->last = htons(0);
+            response.count = htons(25);
+            response.last = htons(0);
          }
          unsigned int data[25];
-         for(int i = 0; i < ntohs(response->count); i++) { //give each data value a randomized value
+         for(int i = 0; i < ntohs(response.count); i++) { //give each data value a randomized value
             data[i] = htonl((unsigned int)(rand() % 4294967296)); 
             unsigned int tempsum =ntohl(data[i]);
             intsum = intsum + tempsum;
          }
-         memcpy(response->payload,data,4*(ntohs(response->count))); //assign payload array to the data values
+         memcpy(response.payload,data,4*(ntohs(response.count))); //assign payload array to the data values
 
          /* send message*/
-         bytes_sent += sendto(sock_server, response, 108, 0,
+         bytes_sent += sendto(sock_server, &response, 108, 0,
                (struct sockaddr*) &client_addr, client_addr_len);
          packets_sent++;
-         seqSum = seqSum + ntohs(response->seqNum);
-         int tempSeqNum = ntohs(response->seqNum);
+         seqSum = seqSum + ntohs(response.seqNum);
+         int tempSeqNum = ntohs(response.seqNum);
          tempSeqNum++;
-         response->seqNum = htons(tempSeqNum);
+         response.seqNum = htons(tempSeqNum);
       }
-      printf("Request ID: %d\t", ntohs(response->id));
-      printf("Count: %d\n", ntohs(reqBuffer->count));
+      printf("Request ID: %d\t", ntohs(response.id));
+      printf("Count: %d\n", ntohs(reqBuffer.count));
       printf("Total number of packets sent: %d\n", packets_sent);
       printf("total number of bytes sent %d\n",bytes_sent);
       printf("Sequence number sum %lu\n",seqSum);
