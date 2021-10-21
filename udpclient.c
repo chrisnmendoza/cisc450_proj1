@@ -1,6 +1,6 @@
 /* udp_client.c */ 
-/* Programmed by Adarsh Sethi */
-/* Sept. 19, 2021 */
+/* Programmed by Christopher-Neil Mendoza and David Lizotte */
+/* Due October 21, 2021 */
 
 #include <stdio.h>          /* for standard I/O functions */
 #include <stdlib.h>         /* for exit */
@@ -12,6 +12,23 @@
 #include <string.h>
 
 #define STRING_SIZE 1024
+
+//struct of request packet
+struct ReqPacket {
+   unsigned short int id;
+   unsigned short int count;
+};
+
+//struct of response packet
+struct ResponsePacket {
+   unsigned short int id;
+   unsigned short int seqNum;
+   unsigned short int last;
+   unsigned short int count;
+   unsigned int payload[25]; /*" It is acceptable to have a static array with the maximum possible size
+                              allowed in the project and not do any dynamic memory allocation"*/
+};
+
 unsigned short csum(unsigned short *ptr, int nbytes){
 	register long sum;
 	unsigned short oddbyte;
@@ -32,8 +49,34 @@ unsigned short csum(unsigned short *ptr, int nbytes){
 	answer=(short)~sum;
 
 	return(answer);
+}
 
+int promptContinue(void) {
+   char userInput[STRING_SIZE];
+   scanf("%s",userInput);
+   if(strcmp("continue",userInput) == 0) {
+      printf("continuing\n");
+      return 1;
+   }
+   else{
+      printf("exiting");
+      printf("\n");
+      return 0;
+   }
+}
 
+int promptInput(void) {
+   while(1 == 1) { //continues until valid number is received
+      printf("Please input count of integers:\n");
+      int num = 0; 
+      scanf("%d", &num);
+      if(num < 1 || num > 65535) {
+         printf("invalid number\n");
+      }
+      else {
+         return num;
+      }
+   }
 }
 
 int main(void) {
@@ -55,22 +98,6 @@ int main(void) {
    char modifiedSentence[STRING_SIZE]; /* receive message */
    unsigned int msg_len;  /* length of message */
    int bytes_sent, bytes_recd; /* number of bytes sent or received */
-  
-   //struct of request packet
-   struct ReqPacket {
-      unsigned short int id;
-      unsigned short int count;
-   };
-
-   //struct of response packet
-   struct ResponsePacket {
-      unsigned short int id;
-      unsigned short int seqNum;
-      unsigned short int last;
-      unsigned short int count;
-      unsigned int payload[25]; /*" It is acceptable to have a static array with the maximum possible size
-                                 allowed in the project and not do any dynamic memory allocation"*/
-   };
 
    /* open a socket */
 
@@ -139,87 +166,60 @@ int main(void) {
    struct ReqPacket* pkt = malloc(sizeof(struct ReqPacket));
    struct ResponsePacket* responseBuffer = malloc(sizeof(struct ResponsePacket));
    pkt->id = htons(0);
-   while(1 == 1) {
+   int shouldContinue = 1;
+   while(shouldContinue == 1) {
       /* user interface */
+      int num = promptInput();
 
-      printf("Please input count of integers:\n");
-      int num = 0; 
-      scanf("%d", &num);
-      if(num < 1 || num > 65535) {
-         printf("invalid number");
-         exit(1);
-      }
-
+      /* prepare request */
       int tempId = ntohs(pkt->id);
       tempId++;
       pkt->id = htons(tempId);
       pkt->count = htons((unsigned short)num);
+
       /* send message */
-   
       bytes_sent = sendto(sock_client, pkt, 4, 0,
                (struct sockaddr *) &server_addr, sizeof (server_addr));
 
       /* get response from server */
-   
-      printf("Waiting for response from server...\n");
+      printf("Waiting for response from server...\n\n");
       int bytesReceived = 0;
       int packetsReceived = 0;
       long int seqSum = 0;
-      int checksum = 0;
+      unsigned int checksum = 0;
       int shouldStop = 0;
-      unsigned int intsum = 0;
       int index = 0;
-      while(shouldStop == 0) {
+      while(shouldStop == 0) { //shouldStop is the value of the last bit in the response packet
          bytes_recd = recvfrom(sock_client, responseBuffer, 108, 0,
-                  (struct sockaddr *) 0, (int *) 0);
+            (struct sockaddr *) 0, (int *) 0);
          if(ntohs(responseBuffer->id) != ntohs(pkt->id)) {
             printf("something went wrong, wrong response number\n");
             exit(1);
          }
          bytesReceived += bytes_recd;
          packetsReceived++;
-         int tempSum = ntohs(responseBuffer->seqNum);
-         seqSum += tempSum;
+         int tempSeq = ntohs(responseBuffer->seqNum); //assign temporary seq value to assign to seqSum after ntohs call
+         seqSum += tempSeq;
          shouldStop = ntohs(responseBuffer->last);
-	 //__int32_t tempintsum = ntohl(responseBuffer->payload[index]);
-	 //intsum= ntohl(intsum+tempintsum);
-	 unsigned int tempintsum = 0;
-	 for(int i =0; i< ntohs(responseBuffer->count);i++){
-		// printf("payload: %d\n", ntohl(responseBuffer->payload[i]));
-		 tempintsum = tempintsum + ntohl(responseBuffer->payload[i]);
-		// printf("tempintsum of data %d\n", tempintsum);
-	 }
-	 intsum = intsum + tempintsum;
-	// printf("packets left to send: %d\n", ntohs(responseBuffer->count));
-	// printf("the data from packet : %d\n",responseBuffer->payload[index]);
-	// printf("this is the intsum after _32int_t %d\n", tempintsum);
-	// printf("this is the intum of the totalintsum %d\n", intsum);
-	 index++;
+         for(int i =0; i< ntohs(responseBuffer->count);i++){ //calculate checksum by adding all data integers
+            checksum = checksum + ntohl(responseBuffer->payload[i]);
+         }
+         index++;
       }
-      //csum(*intsum, bytesReceived);
       printf("Request ID: %d\t",ntohs(pkt->id));
       printf("Count: %d\n",ntohs(pkt->count));
       printf("total number of response packets received: %d\n",packetsReceived);
       printf("total number of bytes received: %d\n",bytesReceived);
       printf("Sequence Number sum: %lu\n",seqSum);
-      printf("checksum: %u\n",intsum);
+      printf("checksum: %u\n",checksum);
       printf("Type \"continue\" to continue, type anything else to exit\n");
-      char userInput[STRING_SIZE];
-      scanf("%s",userInput);
-      if(strcmp("continue",userInput) == 0) {
-         printf("continuing\n");
-      }
-      else{
-         printf("exiting");
-         printf("\n");
-         break;
-      }
+      
+      shouldContinue = promptContinue();
    }
    
    
 
    /* close the socket */
-
    close (sock_client);
    free(pkt);
    free(responseBuffer);
